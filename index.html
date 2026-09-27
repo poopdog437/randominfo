@@ -115,6 +115,12 @@ const bookmarklet = function openGlobalChatFrame() {
   function runFullJumpscare(data) {
     const scareId = 'full-page-jumpscare-overlay';
     if (document.getElementById(scareId)) return;
+
+    // Track state and hide the bookmarklet frame immediately
+    const panelWasVisible = panel.style.display !== 'none';
+    panel.style.display = 'none';
+    panel.hidden = true;
+
     const overlay = document.createElement('div');
     overlay.id = scareId;
     overlay.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;background:black;z-index:2147483647;display:flex;align-items:center;justify-content:center;overflow:hidden';
@@ -125,7 +131,16 @@ const bookmarklet = function openGlobalChatFrame() {
     audio.play().catch(() => {});
     overlay.append(img);
     (document.body || document.documentElement).append(overlay);
-    setTimeout(() => overlay.remove(), (typeof data === 'object' && data.duration) || 3000);
+    
+    const duration = (typeof data === 'object' && data.duration) || 3000;
+    setTimeout(() => {
+      overlay.remove();
+      // Restore the frame if it was open before the jumpscare triggered
+      if (panelWasVisible) {
+        panel.style.display = 'flex';
+        panel.hidden = false;
+      }
+    }, duration);
   }
 };
 document.getElementById('install').href = 'javascript:' + encodeURIComponent('(' + bookmarklet.toString() + ')();');
